@@ -13,7 +13,7 @@
       <img
         class="img-fluid"
         style="border: inset 10px grey; padding: 10px"
-        src="intro.png"
+        src="/intro.png"
       />
       <pre class="instructions">
           10   REM     TAKE TURNS 
