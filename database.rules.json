@@ -1,0 +1,23 @@
+{
+  "rules": {
+    "games": {
+      "$gameid": {
+        "details": {
+          ".read": "auth.uid != null",
+          ".write": "data.child('owner').val() === auth.uid"
+        },
+        "players": {
+            ".read": "root.child('games/'+$gameid+'/details/owner').val()===auth.uid",
+          "$uid": {
+            ".read": "auth.uid == $uid",
+            ".write": "auth.uid == $uid || root.child('games/'+$gameid+'/details/owner').val()===auth.uid"
+          }
+        },
+        "questions": {
+          ".read": "root.child('games/'+$gameid+'/details/owner').val()===auth.uid",
+          ".write": "root.child('games/'+$gameid+'/details/owner').val()===auth.uid"
+        }
+      }
+    }
+  }
+}
