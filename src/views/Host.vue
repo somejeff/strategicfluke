@@ -263,6 +263,7 @@ import {
   update,
   push,
   child,
+  serverTimestamp,
 } from "firebase/database";
 import { getAuth, signInAnonymously } from "firebase/auth";
 export default {
@@ -292,6 +293,7 @@ export default {
       const gameRef = ref(db, `games/${this.gameid}/details`);
       onValue(gameRef, (snap) => {
         this.details = snap.val();
+        set(ref(db, `games/${this.gameid}/lastmodified`), serverTimestamp());
       });
       const playerRef = ref(db, `games/${this.gameid}/players`);
       onValue(playerRef, (snap) => {
@@ -376,14 +378,14 @@ export default {
       const updates = {};
       if(this.details.contestants) {
         Object.keys(this.details.contestants).forEach((key) => {
-        updates[`games/${this.gameid}/details/contestants/${key}/choice`] =
-          null;
-      });
+          updates[`games/${this.gameid}/details/contestants/${key}/choice`] =
+            null;
+        });
       }
       if(this.players) {
-      Object.keys(this.players).forEach((key) => {
-        updates[`games/${this.gameid}/players/${key}/choice`] = null;
-      });
+        Object.keys(this.players).forEach((key) => {
+          updates[`games/${this.gameid}/players/${key}/choice`] = null;
+        });
       }
       update(ref(db), updates);
     },

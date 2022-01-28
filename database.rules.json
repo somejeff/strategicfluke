@@ -2,6 +2,10 @@
   "rules": {
     "games": {
       "$gameid": {
+        "lastmodified": {
+          ".read": "data.child('owner').val() === auth.uid",
+          ".write": "data.child('owner').val() === auth.uid"
+        },
         "details": {
           ".read": "auth.uid != null",
           ".write": "data.child('owner').val() === auth.uid"
