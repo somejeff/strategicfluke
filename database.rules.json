@@ -3,23 +3,27 @@
     "games": {
       "$gameid": {
         "lastmodified": {
-          ".read": "data.child('owner').val() === auth.uid",
-          ".write": "data.child('owner').val() === auth.uid"
+          ".read": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid",
+          ".write": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid"
         },
         "details": {
           ".read": "auth.uid != null",
-          ".write": "data.child('owner').val() === auth.uid"
+          ".write": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid"
+        },
+        "details_host": {
+          ".read": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid",
+          ".write": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid"
         },
         "players": {
-            ".read": "root.child('games/'+$gameid+'/details/owner').val()===auth.uid",
-          "$uid": {
-            ".read": "auth.uid == $uid",
-            ".write": "auth.uid == $uid || root.child('games/'+$gameid+'/details/owner').val()===auth.uid"
-          }
+            ".read": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid",
+            "$uid": {
+              ".read": "auth.uid == $uid",
+              ".write": "auth.uid == $uid || root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid"
+            }
         },
         "questions": {
-          ".read": "root.child('games/'+$gameid+'/details/owner').val()===auth.uid",
-          ".write": "root.child('games/'+$gameid+'/details/owner').val()===auth.uid"
+          ".read": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid",
+          ".write": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid"
         }
       }
     }

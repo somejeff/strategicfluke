@@ -4,7 +4,7 @@
       Game #{{ gameid }} does not exist.
     </div>
 
-    <div class="container" v-if="state == 'intro'">
+    <div class="container" v-if="state.indexOf('intro') == 0">
       <h1>{{ details.name }}</h1>
       <h3>
         Contestants gain points by matching what the rest of the audience
@@ -25,7 +25,7 @@
           </pre
       >
     </div>
-    <div v-if="state == 'outro'" class="container">
+    <div v-if="state.indexOf('scoring') == 0" class="container">
       <div class="card">
         <div class="card-header bg-danger text-light">
           <h1>Congratulations!</h1>
@@ -396,6 +396,7 @@ export default {
       );
     },
     updateChart: function () {
+      window.clearInterval(this.randomInterval);
       this.$nextTick(() => {
         if (this.state.indexOf("round_") == -1 && this.chart) {
           this.chart.destroy();
@@ -420,8 +421,8 @@ export default {
             this.chart.update();
           }, 500);
         } else if (this.state == "round_score") {
+          
           this.progress = 1;
-          window.clearInterval(this.randomInterval);
           this.chart.data.datasets[0].data = [
             this.details.question.aCount || 0,
             this.details.question.bCount || 0,
