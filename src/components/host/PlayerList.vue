@@ -1,9 +1,10 @@
 <template>
   <div>
+
     <table class="table table-condensed table-bordered">
       <thead>
         <tr>
-          <th>Name</th>
+          <th>Name {{totalConnected}} / {{totalPlayers}}</th>
           <th v-if="details.type=='online'">Choice</th>
           <th>Score</th>
           <th>Action</th>
@@ -45,6 +46,14 @@ export default {
       this.players = snap.val();
     });
   },
+  computed: {
+    totalConnected: function() {
+      return this.players && Object.values(this.players).filter(p=>p.connected).length;
+    }, 
+    totalPlayers: function() {
+      return this.players && Object.values(this.players).length;
+    }
+  },
   methods: {
     clearChoices: function () {
       const updates = {};
@@ -54,9 +63,7 @@ export default {
       update(ref(fb.db), updates);
     },
     load: function () {
-        console.log(1);
       this.raw.split("\n").map((d) => {
-        console.log(d);
         const key = push(child(ref(fb.db), `games/${this.gameid}/players`)).key;
         set(ref(fb.db, `games/${this.gameid}/players/${key}`), {
           name: d,
