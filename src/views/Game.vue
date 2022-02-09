@@ -4,7 +4,7 @@
       Game #{{ gameid }} does not exist.
     </div>
 
-    <div class="container" v-if="state == 'intro'">
+    <div class="container" v-if="state.indexOf('intro') == 0">
       <h1>{{ details.name }}</h1>
       <h3>
         Contestants gain points by matching what the rest of the audience
@@ -25,7 +25,30 @@
           </pre
       >
     </div>
-    <div v-if="state == 'outro'" class="container">
+    <div
+      v-if="state.indexOf('contestants') == 0"
+      class="container d-flex flex-wrap align-items-center justify-items-center"
+    >
+      <div
+        v-for="(player, key) in details.scores"
+        :key="key"
+        class="d-flex align-items-center"
+      >
+        <div
+          class="border bg-opacity-25 p-1 m-1 fs-3"
+          :class="{
+            'border-success bg-success ': player.connected,
+            'border-danger bg-danger ': !player.connected,
+          }"
+        >
+          <span class="px-4">{{ player.name }} </span>
+          <span class="badge bg-secondary rounded-pill">{{
+            player.score
+          }}</span>
+        </div>
+      </div>
+    </div>
+    <div v-if="state.indexOf('scoring') == 0" class="container">
       <div class="card">
         <div class="card-header bg-danger text-light">
           <h1>Congratulations!</h1>
@@ -71,10 +94,13 @@
               :src="`/contestant${index % 3}.png`"
             />
             <span class="badge bg-secondary podiumname">{{ entry.name }}</span>
-            <span
-              class="badge bg-secondary podiumscore bordered"
-              :class="pickContestantColor(entry.choice)"
-              >{{ entry.score }}</span
+            <transition name="flip">
+              <span
+                class="badge bg-secondary podiumscore bordered"
+                :class="pickContestantColor(entry.choice)"
+                :key="entry.score"
+                >{{ entry.score }}</span
+              ></transition
             >
           </div>
         </div>
@@ -88,11 +114,10 @@
       ></progress>
       <div class="answers" v-if="details.question">
         <h1>{{ details.question.question }}</h1>
-
         <div class="btn-group btn-group-lg d-flex">
           <input
             type="radio"
-            v-model="choice"
+            v-model="player.choice"
             name="choice"
             value="a"
             class="btn-check"
@@ -109,7 +134,7 @@
 
           <input
             type="radio"
-            v-model="choice"
+            v-model="player.choice"
             name="choice"
             value="b"
             class="btn-check"
@@ -126,7 +151,7 @@
 
           <input
             type="radio"
-            v-model="choice"
+            v-model="player.choice"
             name="choice"
             value="c"
             class="btn-check"
@@ -143,7 +168,7 @@
 
           <input
             type="radio"
-            v-model="choice"
+            v-model="player.choice"
             name="choice"
             value="d"
             class="btn-check"
@@ -160,7 +185,7 @@
 
           <input
             type="radio"
-            v-model="choice"
+            v-model="player.choice"
             name="choice"
             value="e"
             class="btn-check"
@@ -184,7 +209,7 @@
       id="nameModal"
       tabindex="-1"
       data-bs-backdrop="static"
-      data-bs-focus="true"
+      data-bs-keyboard="false"
     >
       <div class="modal-dialog">
         <div class="modal-content">
@@ -198,13 +223,13 @@
               id="playerName"
               type="text"
               v-model="player.name"
-              @keyup.enter="setPlayerName"
             />
           </div>
           <div class="modal-footer">
             <button
               type="button"
               class="btn btn-primary"
+              data-bs-dismiss="modal"
               @click="setPlayerName"
             >
               Save changes
@@ -222,6 +247,7 @@
       {{ player.name }}
       <span class="badge bg-primary">{{ player.score }}</span>
     </button>
+
     <div class="background"></div>
   </div>
 </template>
@@ -253,9 +279,8 @@ export default {
       player: {
         name: null,
       },
-      choice: null,
       gameid: this.$route.params.gameid,
-      details: { state: "intro" },
+      details: { state: "contestants" },
       nameModal: null,
       progress: 0,
       chart: null,
@@ -265,9 +290,6 @@ export default {
   created: async function () {
     await this.signin();
     await this.load();
-  },
-  mounted: function () {
-    this.nameChange();
   },
   computed: {
     state: function () {
@@ -300,6 +322,9 @@ export default {
           })
       );
     },
+    choice: function () {
+      return this.player && this.player.choice;
+    },
   },
   watch: {
     choice: function () {
@@ -311,6 +336,9 @@ export default {
   },
   methods: {
     nameChange: function () {
+      this.nameModal.show();
+    },
+    initNameChange: function () {
       this.nameModal = new window.bootstrap.Modal(
         document.getElementById("nameModal")
       );
@@ -319,7 +347,9 @@ export default {
         .addEventListener("shown.bs.modal", function () {
           document.getElementById("playerName").focus();
         });
-      this.nameModal.show();
+      if (!this.player.name) {
+        this.nameModal.show();
+      }
     },
     signin: async function () {
       const auth = getAuth();
@@ -339,6 +369,7 @@ export default {
         onDisconnect(playerRef).update({ connected: false });
         onValue(playerRef, (snap) => {
           this.player = snap.val();
+          this.initNameChange();
         });
       } else {
         this.details = false;
@@ -348,7 +379,6 @@ export default {
       const db = getDatabase();
       const playerRef = ref(db, `games/${this.gameid}/players/${this.uid}`);
       update(playerRef, { name: this.player.name });
-      this.nameModal.hide();
     },
     setChoice: function () {
       const db = getDatabase();
@@ -396,6 +426,7 @@ export default {
       );
     },
     updateChart: function () {
+      window.clearInterval(this.randomInterval);
       this.$nextTick(() => {
         if (this.state.indexOf("round_") == -1 && this.chart) {
           this.chart.destroy();
@@ -411,7 +442,10 @@ export default {
           this.progress = 0;
           let data = [0, 0, 0, 0, 0];
           this.randomInterval = window.setInterval(() => {
-            this.progress += 0.02;
+            if (this.progress > 1) {
+              this.progress = 1;
+            }
+            this.progress += 0.5 / this.details.pace;
             let index = Math.floor(Math.random() * 10);
             if (index > 4) return;
             data[index]++;
@@ -421,7 +455,6 @@ export default {
           }, 500);
         } else if (this.state == "round_score") {
           this.progress = 1;
-          window.clearInterval(this.randomInterval);
           this.chart.data.datasets[0].data = [
             this.details.question.aCount || 0,
             this.details.question.bCount || 0,
@@ -508,6 +541,37 @@ export default {
   top: 185px;
   left: 65px;
   font-size: 24px;
+  /*animation: odometer 0.4s;*/
+}
+@keyframes odometer {
+  from {
+    transform: rotateX(0deg);
+    opacity: 0.5;
+  }
+  25% {
+    transform: rotateX(90deg);
+    opacity: 0;
+  }
+  to {
+    transform: rotateX(0deg);
+    opacity: 1;
+  }
+}
+
+.flip-enter-active {
+  
+  transition: all 2s;
+}
+.flip-leave-active {
+  transition: all 1s;
+}
+.flip-enter-from {
+  transform: rotateX(90deg);
+}
+
+.flip-leave-to {
+  transform: rotateX(90deg);
+
 }
 
 .instructions {

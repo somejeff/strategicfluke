@@ -1,9 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import Home from '../views/Home.vue'
 import Game from '../views/Game.vue'
-import { } from "@/firebaseConfig";
-import { getDatabase, ref, get } from "firebase/database";
-import { getAuth, signInAnonymously } from "firebase/auth";
 
 const routes = [
   {
@@ -12,20 +9,19 @@ const routes = [
     component: Home
   },
   {
-    path: '/:gameid',
+    path: '/game/:gameid',
     name: 'Game',
     component: Game
   },
   {
-    path: '/:gameid/host',
+    path: '/onprem/:gameid',
+    name: 'OnPrem',
+    component: () => import('../views/OnPrem.vue')
+  },
+  {
+    path: '/host/:gameid',
     name: 'Host',
-    component: () => import(/* webpackChunkName: "host" */ '../views/Host.vue'),
-    beforeEnter: async (to, from, next) => {
-      const auth = getAuth();
-      await signInAnonymously(auth);
-      const owner = await get(ref(getDatabase(), `games/${to.params.gameid}/details/owner`));
-      next(owner.val()===auth.currentUser.uid);
-    }
+    component: () => import('../views/Host.vue')
   }
 ]
 
@@ -33,5 +29,6 @@ const router = createRouter({
   history: createWebHistory(process.env.BASE_URL),
   routes
 })
+
 
 export default router
