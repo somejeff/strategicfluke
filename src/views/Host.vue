@@ -66,6 +66,7 @@
               :gameid="gameid"
               :type="details.type"
               v-model:state="details.state"
+              :pace="details.pace"
               v-on:clearChoices="clearChoices"
               v-on:showResults="showResults"
             />
@@ -175,6 +176,18 @@ export default {
     state: function (newVal) {
       set(ref(fb.db, `${this.detailsRef}/state`), newVal);
     },
+    players: function (newVal) {
+      if (newVal) {
+        set(
+          ref(fb.db, `${this.detailsRef}/scores`),
+          Object.values(newVal)
+            .sort((a, b) => (a.name < b.name ? -1 : 1))
+            .map((e) => {
+              return { name: e.name||"", score: e.score||0, connected: e.connected || false };
+            })
+        );
+      }
+    },
   },
   created: function () {
     onAuthStateChanged(fb.auth, async (user) => {
@@ -235,16 +248,16 @@ export default {
       update(ref(fb.db), updates);
     },
     clearChoices: async function () {
-       const updates = {};
-      if(this.details.contestants) {
+      const updates = {};
+      if (this.details.contestants) {
         Object.keys(this.details.contestants).forEach((key) => {
           updates[`games/${this.gameid}/details/contestants/${key}/choice`] =
             null;
         });
       }
-      if(this.players) {
+      if (this.players) {
         Object.keys(this.players).forEach((key) => {
-          updates[`games/${this.gameid}/players/${key}/choice`] = null;
+          updates[`games/${this.gameid}/players/${key}/choice`] = "";
         });
       }
       update(ref(fb.db), updates);
@@ -264,7 +277,7 @@ export default {
         });
         const players = await get(ref(fb.db, `games/${this.gameid}/players`));
         Object.keys(players.val()).forEach((k) => {
-          updates[`games/${this.gameid}/players/${k}/choice`] = null;
+          updates[`games/${this.gameid}/players/${k}/choice`] = "";
           updates[`games/${this.gameid}/players/${k}/score`] = 0;
           updates[`games/${this.gameid}/players/${k}/played`] = false;
         });
