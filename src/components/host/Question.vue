@@ -21,7 +21,15 @@
           </div>
         </td>
         <td>
-          <button class="btn btn-primary" @click="unsetQuestion">Done</button>
+          <button
+            class="btn btn-primary"
+            @click="
+              $emit('clearChoices');
+              unsetQuestion();
+            "
+          >
+            Done
+          </button>
         </td>
       </tr>
       <tr>
@@ -67,28 +75,13 @@
             </button>
           </div>
           <div class="btn-group" v-else>
-            <button
-              class="btn btn-outline-primary"
-              @click="
-                $emit('clearChoices');
-                $emit('update:state', 'round_prep');
-              "
-            >
+            <button class="btn btn-outline-primary" @click="prepRound">
               Prepare Round
             </button>
-            <button
-              class="btn btn-outline-primary"
-              @click="$emit('update:state', 'round_play')"
-            >
+            <button class="btn btn-outline-primary" @click="playRound">
               Play Round
             </button>
-            <button
-              class="btn btn-outline-primary"
-              @click="
-                $emit('showResults');
-                $emit('update:state', 'round_score');
-              "
-            >
+            <button class="btn btn-outline-primary" @click="scoreRound">
               Score Round
             </button>
           </div>
@@ -103,7 +96,7 @@ import fb from "@/firebaseConfig";
 import { set, ref, onValue, remove } from "@firebase/database";
 export default {
   name: "Question",
-  props: ["gameid", "type", "state"],
+  props: ["gameid", "type", "state", "pace"],
   data: function () {
     return {
       entry: null,
@@ -121,10 +114,25 @@ export default {
   },
   methods: {
     unsetQuestion: function () {
+      window.clearTimeout(this.timer);
       remove(ref(fb.db, this.ref));
     },
     showChoice: function (letter) {
       set(ref(fb.db, `${this.ref}/show_${letter}`), true);
+    },
+    prepRound: function () {
+      window.clearTimeout(this.timer);
+      this.$emit("clearChoices");
+      this.$emit("update:state", "round_prep");
+    },
+    playRound: function () {
+      this.$emit("update:state", "round_play");
+      this.timer = window.setTimeout(this.scoreRound, this.pace * 1000 + 300);
+    },
+    scoreRound: function () {
+      window.clearTimeout(this.timer);
+      this.$emit("showResults");
+      this.$emit("update:state", "round_score");
     },
   },
 };

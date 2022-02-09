@@ -8,28 +8,32 @@
         </tr>
       </thead>
       <tbody>
-         <tr  v-for="(entry, key) in questions"
+        <tr
+          v-for="(entry, key) in questions"
           :key="key"
           class="bg-opacity-10"
           :class="{
             'bg-success': entry.played,
-          }">
-        <td>
-          <div>{{ entry.question }}</div>
-          <div>
-            <ol class="answers">
-              <li v-if="entry.a">{{ entry.a }}</li>
-              <li v-if="entry.b">{{ entry.b }}</li>
-              <li v-if="entry.c">{{ entry.c }}</li>
-              <li v-if="entry.d">{{ entry.d }}</li>
-              <li v-if="entry.e">{{ entry.e }}</li>
-            </ol>
-          </div>
-        </td>
-        <td>
-          <a class="btn btn-primary" href="#" @click="setQuestion(key)">Play</a>
-        </td>
-      </tr>
+          }"
+        >
+          <td>
+            <div>{{ entry.question }}</div>
+            <div>
+              <ol class="answers">
+                <li v-if="entry.a">{{ entry.a }}</li>
+                <li v-if="entry.b">{{ entry.b }}</li>
+                <li v-if="entry.c">{{ entry.c }}</li>
+                <li v-if="entry.d">{{ entry.d }}</li>
+                <li v-if="entry.e">{{ entry.e }}</li>
+              </ol>
+            </div>
+          </td>
+          <td>
+            <a class="btn btn-primary" href="#" @click="setQuestion(key)"
+              >Play</a
+            >
+          </td>
+        </tr>
       </tbody>
     </table>
     <textarea v-model="rawQuestions"></textarea
@@ -58,6 +62,8 @@ export default {
   methods: {
     setQuestion: function (key) {
       set(ref(fb.db, `games/${this.gameid}/questions/${key}/played`), true);
+      set(ref(fb.db, `games/${this.gameid}/details/state`), "round_prep");
+
       set(
         ref(fb.db, `games/${this.gameid}/details/question`),
         this.questions[key]
