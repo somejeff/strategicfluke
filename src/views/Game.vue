@@ -76,23 +76,17 @@
       </div>
     </div>
     <div v-if="state.indexOf('round_') == 0">
-      <div class="d-flex stage">
-        <div class="p-2 flex-fill">
-          <div class="board">
-            <canvas id="chart" ref="chart"></canvas>
-          </div>
+      <div class="stage p-4 d-flex ">
+        <div class="board">
+          <canvas id="chart" ref="chart"></canvas>
         </div>
-
-        <div class="p-2 d-flex">
+        <div class="d-flex justify-content-around flex-grow-1">
           <div
             style="position: relative"
             v-for="(entry, key, index) in details.contestants"
             :key="key"
           >
-            <img
-              style="height: 275px; padding-left: 50px"
-              :src="`/contestant${index % 3}.png`"
-            />
+            <img class="contestant" :src="`/contestant${index % 3}.png`" />
             <span class="badge bg-secondary podiumname">{{ entry.name }}</span>
             <transition name="flip">
               <span
@@ -336,6 +330,7 @@ export default {
   },
   methods: {
     nameChange: function () {
+      console.log(1);
       this.nameModal.show();
     },
     initNameChange: function () {
@@ -361,13 +356,13 @@ export default {
       const gameRef = ref(db, `games/${this.gameid}/details`);
       const snap = await get(gameRef);
       if (snap.exists()) {
-        onValue(gameRef, (snap) => {
+        await onValue(gameRef, (snap) => {
           this.details = snap.val();
         });
         const playerRef = ref(db, `games/${this.gameid}/players/${this.uid}`);
-        update(playerRef, { connected: true });
-        onDisconnect(playerRef).update({ connected: false });
-        onValue(playerRef, (snap) => {
+        await update(playerRef, { connected: true });
+        await onDisconnect(playerRef).update({ connected: false });
+        await onValue(playerRef, (snap) => {
           this.player = snap.val();
           this.initNameChange();
         });
@@ -530,16 +525,19 @@ export default {
 .stage {
   background-color: #ffe3b1;
 }
+.contestant {
+  height: 275px;
+}
 .podiumname {
   position: absolute;
   top: 145px;
-  left: 50px;
+  left: 10px;
   font-size: 20px;
 }
 .podiumscore {
   position: absolute;
   top: 185px;
-  left: 65px;
+  left: 18px;
   font-size: 24px;
   /*animation: odometer 0.4s;*/
 }
@@ -559,7 +557,6 @@ export default {
 }
 
 .flip-enter-active {
-  
   transition: all 2s;
 }
 .flip-leave-active {
@@ -571,7 +568,6 @@ export default {
 
 .flip-leave-to {
   transform: rotateX(90deg);
-
 }
 
 .instructions {
