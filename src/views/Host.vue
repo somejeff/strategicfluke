@@ -1,6 +1,5 @@
 <template>
   <div id="main">
-    <Login v-if="showLogin" />
     <template v-if="user">
       <nav class="navbar navbar-expand-lg fixed-top navbar-dark bg-secondary">
         <div class="container-fluid">
@@ -139,7 +138,6 @@ import {
   update,
 } from "@firebase/database";
 import { onAuthStateChanged, signOut } from "@firebase/auth";
-import Login from "@/components/host/Login.vue";
 import QuestionList from "@/components/host/QuestionList.vue";
 import PlayerList from "@/components/host/PlayerList.vue";
 import Question from "@/components/host/Question.vue";
@@ -148,7 +146,6 @@ import Scoring from "@/components/host/Scoring.vue";
 export default {
   name: "Host",
   components: {
-    Login,
     QuestionList,
     PlayerList,
     Question,
@@ -158,7 +155,6 @@ export default {
   data: function () {
     return {
       user: null,
-      showLogin: false,
       gameid: this.$route.params.gameid,
       details: null,
       players: null,
@@ -183,7 +179,11 @@ export default {
           Object.values(newVal)
             .sort((a, b) => (a.name < b.name ? -1 : 1))
             .map((e) => {
-              return { name: e.name||"", score: e.score||0, connected: e.connected || false };
+              return {
+                name: e.name || "",
+                score: e.score || 0,
+                connected: e.connected || false,
+              };
             })
         );
       }
@@ -193,11 +193,10 @@ export default {
     onAuthStateChanged(fb.auth, async (user) => {
       if (user) {
         console.log(user.uid);
-        this.showLogin = false;
         await this.loadGame();
         this.user = user;
       } else {
-        this.showLogin = true;
+        this.$router.go("/");
       }
     });
   },
