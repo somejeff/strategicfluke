@@ -19,6 +19,11 @@ const routes = [
     component: () => import('../views/OnPrem.vue')
   },
   {
+    path: '/host',
+    name: 'HostList',
+    component: () => import('../views/List.vue')
+  },
+  {
     path: '/host/:gameid',
     name: 'Host',
     component: () => import('../views/Host.vue')
