@@ -12,7 +12,7 @@
         },
         "details_host": {
           ".read": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid",
-          ".write": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid"
+          ".write": "auth!=null && (root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid || root.child('games/'+$gameid+'/details_host/owner').val()===null)"
         },
         "players": {
             ".read": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid",
@@ -25,6 +25,12 @@
           ".read": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid",
           ".write": "root.child('games/'+$gameid+'/details_host/owner').val()===auth.uid"
         }
+      }
+    },
+    "hosts": {
+      "$uid": {
+        ".read": "auth.uid == $uid",
+        ".write": "auth.uid == $uid"
       }
     }
   }
