@@ -22,7 +22,7 @@ export default {
         ui = new firebaseui.auth.AuthUI(fb.auth);
       }
       ui.start("#firebaseui-auth-container", {
-        signInSuccessUrl: "/host",
+        signInSuccessUrl: "/host/list",
         signInOptions: [
           EmailAuthProvider.PROVIDER_ID,
           GoogleAuthProvider.PROVIDER_ID,
