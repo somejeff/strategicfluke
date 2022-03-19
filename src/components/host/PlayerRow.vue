@@ -16,13 +16,15 @@
       >
     </td>
     <td>{{ player.choice }}</td>
-    <td>
+    <td class="d-flex">
+      <button @click="player.score--" class="btn btn-secondary">-</button>
       <input
         class="form-control"
         size="1"
         v-model="player.score"
         type="number"
       />
+      <button @click="player.score++" class="btn btn-secondary">+</button>
     </td>
     <td>
       <button
