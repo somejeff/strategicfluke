@@ -5,7 +5,7 @@
       <thead>
         <tr>
           <th>Name {{totalConnected}} / {{totalPlayers}}</th>
-          <th v-if="details.type=='online'">Choice</th>
+          <th>Choice</th>
           <th>Score</th>
           <th>Action</th>
         </tr>

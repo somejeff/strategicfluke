@@ -14,6 +14,16 @@ const routes = [
     component: Game
   },
   {
+    path: '/wordle/host/:gameid',
+    name: 'WordleHost',
+    component: () => import('../wordle-war/Host.vue')
+  },
+  {
+    path: '/wordle/:gameid',
+    name: 'Wordle',
+    component: () => import('../wordle-war/Game.vue')
+  },
+  {
     path: '/onprem/:gameid',
     name: 'OnPrem',
     component: () => import('../views/OnPrem.vue')
