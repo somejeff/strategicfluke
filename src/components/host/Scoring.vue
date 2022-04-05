@@ -4,37 +4,69 @@
       <div class="modal-content">
         <div class="modal-header">Scoring</div>
         <div class="modal-body">
-            <b>Return all contestants before showing winners</b><br/>
+          <b>Return all contestants before showing winners</b><br />
           <div
             class="btn-group btn-group-vertical"
             v-if="details.type == 'online'"
           >
-            <button class="btn btn-outline-primary" @click="showWinners(-1)">
+            <button
+              class="btn btn-outline-primary"
+              @click="showWinners(5, true)"
+            >
               Runner Ups
             </button>
-            <button class="btn btn-outline-primary" @click="showWinners(4)">
+            <button
+              class="btn btn-outline-primary"
+              @click="showWinners(4, false)"
+            >
               Fourth
             </button>
-            <button class="btn btn-outline-primary" @click="showWinners(3)">
+            <button
+              class="btn btn-outline-primary"
+              @click="showWinners(3, false)"
+            >
               Third
             </button>
-            <button class="btn btn-outline-primary" @click="showWinners(2)">
+            <button
+              class="btn btn-outline-primary"
+              @click="showWinners(2, false)"
+            >
               Second
             </button>
-            <button class="btn btn-outline-primary" @click="showWinners(1)">
+            <button
+              class="btn btn-outline-primary"
+              @click="showWinners(1, false)"
+            >
               First
             </button>
-            <button class="btn btn-outline-primary" @click="showWinners(0)">
+            <button
+              class="btn btn-outline-primary"
+              @click="showWinners(0, false)"
+            >
               Zeroth
             </button>
           </div>
 
+          <button class="btn btn-outline-primary" @click="showWinners(3, true)">
+            Runner Ups
+          </button>
           <button
-            v-else
             class="btn btn-outline-primary"
-            @click="showAllWinners"
+            @click="showWinners(2, false)"
           >
-            Show Winners
+            Third
+          </button>
+          <button
+            class="btn btn-outline-primary"
+            @click="showWinners(1, false)"
+          >
+            Second
+          </button>
+          <button
+            class="btn btn-outline-primary"
+            @click="showWinners(0, false)"
+          >
+            First
           </button>
         </div>
         <div class="modal-footer">
@@ -68,24 +100,19 @@ export default {
     });
   },
   methods: {
-    showAllWinners: function () {
+    showWinners: function (val, showRest) {
       const players = Object.values(this.players).sort((a, b) =>
         a.score < b.score ? 1 : -1
       );
-      players.forEach((e, i) => {
-        set(ref(fb.db, `games/${this.gameid}/details/winners/${i}`), {
-          name: e.name,
-          score: e.score,
-        });
+      set(ref(fb.db, `games/${this.gameid}/details/winners/${val}`), {
+        place: val,
+        name: players[val].name,
+        score: players[val].score,
       });
-    },
-    showWinners: function (val) {
-      const players = Object.values(this.players).sort((a, b) =>
-        a.score < b.score ? 1 : -1
-      );
-      if (val == -1) {
+
+      if (showRest) {
         players.forEach((e, i) => {
-          if (i <= 4) {
+          if (i <= val) {
             return;
           }
           set(ref(fb.db, `games/${this.gameid}/details/winners/${i}`), {
@@ -93,13 +120,7 @@ export default {
             score: e.score,
           });
         });
-      } else {
-        set(ref(fb.db, `games/${this.gameid}/details/winners/${val}`), {
-          place: val,
-          name: players[val].name,
-          score: players[val].score,
-        });
-      }
+      } 
     },
   },
 };

@@ -5,6 +5,7 @@
     :class="{
       'bg-info': isContestant,
       'bg-success': player.played,
+      'bg-secondary':!player.available
     }"
   >
     <td>
@@ -12,8 +13,8 @@
         v-show="type == 'player'"
         class="form-text"
         >{{ playerKey }}
-        <a href="#" class="text-danger" @click="removePlayer">Remove</a></span
-      >
+        <a href="#" class="text-danger" @click="removePlayer">Remove</a>  Available: {{player.available}}</span
+      > 
     </td>
     <td>{{ player.choice }}</td>
     <td class="d-flex">
@@ -100,7 +101,7 @@ export default {
         fb.db,
         `games/${this.gameid}/details/contestants/${this.playerKey}`
       );
-      set(gameRef, { score: 0, name: this.player.name });
+      set(gameRef, { score: 0, points:0, name: this.player.name });
     },
     removeContestant: async function () {
       // increment player score with contestant score
@@ -109,8 +110,9 @@ export default {
         `games/${this.gameid}/players/${this.playerKey}`
       );
       const player = (await get(gameRef)).val();
+      console.log(player.score)
       update(gameRef, {
-        score: player.score * 1 + this.player.score,
+        score: (player.score||0) * 1 + this.player.score,
         played: true,
       });
       remove(ref(fb.db, this.refStr));
