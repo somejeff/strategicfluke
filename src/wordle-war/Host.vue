@@ -324,6 +324,15 @@ export default {
         onValue(ref(fb.db, this.playerRefKey), (snap) => {
           this.players = snap.val();
         });
+
+
+        const k = push(
+          child(
+            ref(fb.db),
+            `games/${this.gameid}/details/teams`
+          )
+        ).key;
+        set(ref(fb.db,`games/${this.gameid}/details/teams/${k}`),k);
       } catch (e) {
         console.error(e);
         this.details = false;
@@ -390,14 +399,14 @@ export default {
       }
     },
     endRound: function () {
-      /*Object.keys(this.details.contestants).forEach((key) => {
+      Object.keys(this.details.contestants).forEach((key) => {
         if (this.players[key] && this.players[key].words) {
           set(
             ref(fb.db, `games/${this.gameid}/details/contestants/${key}/words`),
             this.players[key].words
           );
         }
-      });*/
+      });
       this.details.state = "round_score";
       window.clearInterval(this.timer);
     },
@@ -519,6 +528,29 @@ export default {
         ref(fb.db, `games/${this.gameid}/details/contestants/${key}/team`),
         team
       );
+
+      // auto manage teams
+      // remove empty teams
+      Object.values(this.details.teams).forEach((t) => {
+        let keep = false;
+        if (this.details.contestants) {
+          keep = Object.values(this.details.contestants).filter(
+            (c) => c.team == t
+          ).length;
+        }
+        if (!keep) {
+          remove(ref(fb.db, `games/${this.gameid}/details/teams/${t}`));
+        }
+      });
+      // create an empty trailing team
+      
+       const k = push(
+          child(
+            ref(fb.db),
+            `games/${this.gameid}/details/teams`
+          )
+        ).key;
+        set(ref(fb.db,`games/${this.gameid}/details/teams/${k}`),k);
     },
 
     showWinners: function (val, showRest) {

@@ -345,7 +345,8 @@
     </div>
   </div>
 
-  <div class="alert alert-danger" role="alert" v-else>
+  <div v-if="!details && loading" class="alert alert-info">Loading...</div>
+  <div class="alert alert-danger" role="alert" v-if="!details && !loading">
     Game #{{ gameid }} does not exist.
   </div>
 </template>
@@ -365,6 +366,7 @@ const dictionary = require("./dictionary.json");
 export default {
   data: function () {
     return {
+      loading: true,
       uid: null,
       player: {
         name: null,
@@ -383,26 +385,34 @@ export default {
   },
   computed: {
     state: function () {
-      return this.details.state;
+      return this.details && this.details.state;
     },
     contestant: function () {
-      return this.details.contestants[this.uid];
+      return (
+        this.details &&
+        this.details.contestants &&
+        this.details.contestants[this.uid]
+      );
     },
     contestants: function () {
-      const list = Object.keys(this.details.contestants)
-        .map((key) => {
-          const p = this.details.contestants[key];
-          p.key = key;
-          return p;
-        })
-        .sort((a, b) => (a.team > b.team ? 1 : -1));
-      if (this.details.visibility == "team") {
-        return [
-          ...list.filter((p) => p.team == this.contestant.team),
-          ...list.filter((p) => p.team != this.contestant.team),
-        ];
+      if (this.details && this.details.contestants) {
+        const list = Object.keys(this.details.contestants)
+          .map((key) => {
+            const p = this.details.contestants[key];
+            p.key = key;
+            return p;
+          })
+          .sort((a, b) => (a.team > b.team ? 1 : -1));
+        if (this.details.visibility == "team") {
+          return [
+            ...list.filter((p) => p.team == this.contestant.team),
+            ...list.filter((p) => p.team != this.contestant.team),
+          ];
+        } else {
+          return list;
+        }
       } else {
-        return list;
+        return [];
       }
     },
     fillerRows: function () {
@@ -527,6 +537,7 @@ export default {
         });
       } else {
         this.details = false;
+        this.loading = false;
       }
     },
     captureKey: function (event) {
